@@ -67,7 +67,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             match resp.more {
                 true => page += 1,
                 false => {
-                    csv_data.push_str("\n\n\n");
                     break;
                 }
             }
