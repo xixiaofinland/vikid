@@ -3,13 +3,13 @@ use serde_json::Number;
 use std::error::Error;
 use std::fs;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct VikiResponse {
     more: bool,
     response: Vec<Item>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Item {
     titles: Title,
     subtitle_completions: Subtitle,
@@ -19,30 +19,30 @@ struct Item {
     created_at: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Title {
     en: String,
     #[serde(default)]
     zh: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Subtitle {
     fi: Option<Number>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Url {
     web: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Review {
     average_rating: Number,
     count: Number,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Clip {
     count: Number,
 }
@@ -51,8 +51,7 @@ const COUNTRIES: [&str; 5] = ["kr", "cn", "jp", "tw", "th"];
 const ROOT_URL: &str = "https://api.viki.io/v4/containers.json?page=";
 const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_recent&licensed=true&app=100000a&origin_country=";
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let mut csv_data =
         String::from("title_en,title_zh,url,FI,rate,rateCount,clipsCount,created_at,country\n");
 
@@ -61,10 +60,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         loop {
             println!("{} - page: {}", country, page);
             let request_url = format!("{}{}{}{}", ROOT_URL, page, PARAMETERS, country);
-            let resp = reqwest::get(request_url)
-                .await?
-                .json::<VikiResponse>()
-                .await?;
+            let resp = reqwest::blocking::get(request_url)?.json::<VikiResponse>()?;
 
             csv_data.push_str(&fetch_data(&resp.response, country));
 
