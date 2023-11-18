@@ -1,7 +1,10 @@
 [package]
 name = "vikid"
+authors = ["Xi Xiao <tdxiaoxi2@gmail.com>"]
 version = "0.1.0"
 edition = "2021"
+description = "A commandline tool to retrieve TV Series that have Finnish subtitles from viki.com."
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["json"] }

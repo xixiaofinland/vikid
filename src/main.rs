@@ -59,12 +59,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     for country in COUNTRIES.iter() {
         let mut page = 0;
         loop {
+            println!("{} - page: {}", country, page);
             let request_url = format!("{}{}{}{}", ROOT_URL, page, PARAMETERS, country);
             let resp = reqwest::get(request_url)
                 .await?
                 .json::<VikiResponse>()
                 .await?;
-            csv_data.push_str(&fetch_data(&resp.response));
+
+            csv_data.push_str(&fetch_data(&resp.response, country));
 
             match resp.more {
                 true => page += 1,
@@ -80,15 +82,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn fetch_data(items: &Vec<Item>) -> String {
+fn fetch_data(items: &Vec<Item>, country: &str) -> String {
     let mut data = String::new();
     for item in items.iter() {
-        data.push_str(&parse_data(item));
+        data.push_str(&parse_data(item, country));
     }
     data
 }
 
-fn parse_data(item: &Item) -> String {
+fn parse_data(item: &Item, country: &str) -> String {
     let en = &item.titles.en;
     let zh = &item.titles.zh;
     let url = &item.url.web;
@@ -105,7 +107,7 @@ fn parse_data(item: &Item) -> String {
     let created_at = &item.created_at;
 
     format!(
-        "\"{}\",{},{},{},{},{},{},{}\n",
-        en, zh, url, fi, rate, rate_count, clips_count, created_at
+        "\"{}\",\"{}\",{},{},{},{},{},{},{}\n",
+        en, zh, url, fi, rate, rate_count, clips_count, created_at, country
     )
 }
