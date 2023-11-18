@@ -53,7 +53,7 @@ const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_r
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut csv_data =
-        String::from("title_en,title_zh,url,FI,rate,rateCount,clipsCount,created_at,country\n");
+        String::from("title_en,title_zh,url,fi,rate,rate_count,clips_count,created_at,country\n");
 
     for country in COUNTRIES.iter() {
         let mut page = 0;
