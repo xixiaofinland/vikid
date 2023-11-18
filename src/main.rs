@@ -16,17 +16,18 @@ struct Item {
     url: Url,
     review_stats: Review,
     clips: Option<Clip>,
+    created_at: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Title {
     en: String,
+    #[serde(default)]
     zh: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Subtitle {
-    #[serde(default)]
     fi: Option<Number>,
 }
 
@@ -52,25 +53,30 @@ const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_r
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let mut page = 0;
-    let mut country = COUNTRIES[0];
+    let mut csv_data =
+        String::from("title_en,title_zh,url,FI,rate,rateCount,clipsCount,created_at,country\n");
 
-    let mut csvData = String::from("title_en,title_zh,url,FI,rate,rateCount,clipsCount\n");
-    loop {
-        let request_url = format!("{}{}{}{}", ROOT_URL, page, PARAMETERS, country);
-        let resp = reqwest::get(request_url)
-            .await?
-            .json::<VikiResponse>()
-            .await?;
-        csvData.push_str(&fetch_data(&resp.response));
+    for country in COUNTRIES.iter() {
+        let mut page = 0;
+        loop {
+            let request_url = format!("{}{}{}{}", ROOT_URL, page, PARAMETERS, country);
+            let resp = reqwest::get(request_url)
+                .await?
+                .json::<VikiResponse>()
+                .await?;
+            csv_data.push_str(&fetch_data(&resp.response));
 
-        match resp.more {
-            true => break, //page += 1,
-            false => break,
+            match resp.more {
+                true => page += 1,
+                false => {
+                    csv_data.push_str("\n\n\n");
+                    break;
+                }
+            }
         }
     }
 
-    fs::write("./result.csv", csvData)?;
+    fs::write("./result.csv", csv_data)?;
     Ok(())
 }
 
@@ -88,7 +94,7 @@ fn parse_data(item: &Item) -> String {
     let url = &item.url.web;
     let fi: Number = match &item.subtitle_completions.fi {
         Some(n) => n.clone(),
-        None => 0.into(),
+        None => return "".into(),
     };
     let rate = &item.review_stats.average_rating;
     let rate_count = &item.review_stats.count;
@@ -96,9 +102,10 @@ fn parse_data(item: &Item) -> String {
         Some(c) => c.count.clone(),
         None => 0.into(),
     };
+    let created_at = &item.created_at;
 
     format!(
-        "{},{},{},{},{},{},{}\n",
-        en, zh, url, fi, rate, rate_count, clips_count
+        "\"{}\",{},{},{},{},{},{},{}\n",
+        en, zh, url, fi, rate, rate_count, clips_count, created_at
     )
 }
