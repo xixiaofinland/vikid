@@ -8,7 +8,7 @@ use std::fs;
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
 #[derive(Serialize, Deserialize)]
-pub struct VikiResponse {
+struct VikiResponse {
     more: bool,
     response: Vec<Item>,
 }
@@ -126,7 +126,7 @@ mod tests {
     #[test]
     fn can_serielize() -> TestResult {
         let json_string = fs::read_to_string(viki_res)?;
-        let result = serde_json::from_str::<VikiResponse>(&json_string)?;
+        let result: VikiResponse = serde_json::from_str(&json_string)?;
 
         assert_eq!(result.more, true);
         assert_eq!(result.response.len(), 1);
