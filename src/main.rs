@@ -1,4 +1,4 @@
-use clap::{builder::PossibleValue, ArgAction, Parser, ValueEnum};
+use clap::Parser;
 
 type MyResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -16,10 +16,12 @@ fn main() {
 }
 
 pub fn run(arg: Arg) -> MyResult<()> {
+    println!("VIKI data pulling..");
+    vikid::create_csv_from_viki()?;
+
     if arg.pull_extra == true {
-        println!("Pulling data with douban info...");
-    } else {
-        println!("Pulling data without douban info...");
+        println!("WMDA data pulling...");
     }
+
     Ok(())
 }

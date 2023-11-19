@@ -7,6 +7,7 @@ use std::fs;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
+// ===========================================================
 #[derive(Serialize, Deserialize)]
 struct VikiResponse {
     more: bool,
@@ -51,24 +52,55 @@ struct Clip {
     count: Number,
 }
 
+// ===========================================================
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct WmdaItem {
+    douban_id: String,
+    douban_rating: String,
+    data: Vec<Data>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Data {
+    name: String,
+}
+
+// ===========================================================
 const COUNTRIES: [&str; 5] = ["kr", "cn", "jp", "tw", "th"];
 const ROOT_URL: &str = "https://api.viki.io/v4/containers.json?page=";
 const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_recent&licensed=true&app=100000a&origin_country=";
+const CSV_PATH: &str = "./result.csv";
+const HEADER: &[&str] = &[
+    "title_en",
+    "title_zh",
+    "url",
+    "fi",
+    "rate",
+    "rate_count",
+    "clips_count",
+    "created_at",
+    "country",
+    "douban_id",
+    "douban_rate",
+];
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let mut csv_data =
-        String::from("title_en,title_zh,url,fi,rate,rate_count,clips_count,created_at,country\n");
+pub fn create_csv_from_viki() -> MyResult<()> {
+    let mut csv_data = String::from(HEADER.join(","));
+    csv_data.push_str("\n");
 
     for country in COUNTRIES.iter() {
         let mut page = 0;
         loop {
             println!("{} - page: {}", country, page);
+
             let request_url = format!("{}{}{}{}", ROOT_URL, page, PARAMETERS, country);
-            let resp = reqwest::blocking::get(request_url)?.json::<VikiResponse>()?;
+            let resp = get_http(request_url)?;
+            let data: VikiResponse = serde_json::from_str(&resp)?;
 
-            csv_data.push_str(&fetch_data(&resp.response, country));
-
-            match resp.more {
+            csv_data.push_str(&fetch_data(&data.response, country));
+            match data.more {
                 true => page += 1,
                 false => {
                     break;
@@ -77,7 +109,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    fs::write("./result.csv", csv_data)?;
+    fs::write(CSV_PATH, csv_data)?;
     Ok(())
 }
 
