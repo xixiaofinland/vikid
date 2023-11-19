@@ -21,6 +21,7 @@ pub fn run(arg: Arg) -> MyResult<()> {
 
     if arg.pull_extra == true {
         println!("WMDA data pulling...");
+        vikid::create_csv_from_wmda()?;
     }
 
     Ok(())

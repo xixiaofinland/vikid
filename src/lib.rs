@@ -1,9 +1,11 @@
 #![allow(dead_code, unused, unused_imports)]
 
+use csv::{ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
 use std::error::Error;
 use std::fs;
+use std::{thread, time};
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -69,9 +71,10 @@ struct Data {
 
 // ===========================================================
 const COUNTRIES: [&str; 5] = ["kr", "cn", "jp", "tw", "th"];
-const ROOT_URL: &str = "https://api.viki.io/v4/containers.json?page=";
+const V_ROOT_URL: &str = "https://api.viki.io/v4/containers.json?page=";
 const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_recent&licensed=true&app=100000a&origin_country=";
-const CSV_PATH: &str = "./result.csv";
+const VIKI_FILE: &str = "./viki.csv";
+const WMDA_FILE: &str = "./viki_wmda.csv";
 const HEADER: &[&str] = &[
     "title_en",
     "title_zh",
@@ -85,6 +88,8 @@ const HEADER: &[&str] = &[
     "douban_id",
     "douban_rate",
 ];
+const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
+const WMDB_CALL_INTERVAL: u64 = 31;
 
 pub fn create_csv_from_viki() -> MyResult<()> {
     let mut csv_data = String::from(HEADER.join(","));
@@ -95,8 +100,8 @@ pub fn create_csv_from_viki() -> MyResult<()> {
         loop {
             println!("{} - page: {}", country, page);
 
-            let request_url = format!("{}{}{}{}", ROOT_URL, page, PARAMETERS, country);
-            let resp = get_http(request_url)?;
+            let request_url = format!("{}{}{}{}", V_ROOT_URL, page, PARAMETERS, country);
+            let resp = http_get(request_url)?;
             let data: VikiResponse = serde_json::from_str(&resp)?;
 
             csv_data.push_str(&fetch_data(&data.response, country));
@@ -109,8 +114,53 @@ pub fn create_csv_from_viki() -> MyResult<()> {
         }
     }
 
-    fs::write(CSV_PATH, csv_data)?;
+    fs::write(VIKI_FILE, csv_data)?;
     Ok(())
+}
+
+pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
+    let reader = ReaderBuilder::new().from_path(VIKI_FILE)?;
+    let mut writer = WriterBuilder::new().from_path(WMDA_FILE)?;
+    writer.write_record(HEADER)?;
+
+    for record in reader.into_records() {
+        let mut record = record?;
+
+        match record.get(1) {
+            Some(name) if !name.is_empty() => {
+                println!("call wmdb: {}", name);
+                let response = call_wmdb(&name)?;
+                println!("response: {:?}", response);
+                record.push_field(&response.0);
+                record.push_field(&response.1);
+                writer.write_record(record.iter())?;
+                writer.flush()?;
+                println!("Sleep...{} secs", WMDB_CALL_INTERVAL);
+                thread::sleep(time::Duration::from_secs(WMDB_CALL_INTERVAL));
+            }
+            _ => {
+                println!("no ch_name");
+                writer.write_record(record.iter())?;
+                writer.flush()?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn call_wmdb(name: &str) -> MyResult<(String, String)> {
+    let request_url = format!("{}{}", W_ROOT_URL, name);
+    let resp = http_get(request_url)?;
+    let items: Vec<WmdaItem> = serde_json::from_str(&resp)?;
+
+    for item in items {
+        if item.data[0].name == name {
+            return Ok((item.douban_id, item.douban_rating));
+        }
+    }
+
+    Ok(("N/A".to_string(), "N/A".to_string()))
 }
 
 fn fetch_data(items: &Vec<Item>, country: &str) -> String {
@@ -143,7 +193,7 @@ fn parse_data(item: &Item, country: &str) -> String {
     )
 }
 
-fn get_http(url: String) -> MyResult<String> {
+fn http_get(url: String) -> MyResult<String> {
     Ok(reqwest::blocking::get(url)?.text()?)
 }
 
