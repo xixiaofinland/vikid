@@ -7,6 +7,12 @@ description = "A commandline tool to retrieve TV Series that have Finnish subtit
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+clap = { version = "4.4.8", features = ["derive"] }
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+
+[dev-dependencies]
+assert_cmd = "2.0.12"
+httpmock = "0.7.0-rc.1"
+predicates = "3.0.4"
