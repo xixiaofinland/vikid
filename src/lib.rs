@@ -1,5 +1,3 @@
-#![allow(dead_code, unused, unused_imports)]
-
 use csv::{ReaderBuilder, WriterBuilder};
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
@@ -73,8 +71,8 @@ struct Data {
 const COUNTRIES: [&str; 5] = ["kr", "cn", "jp", "tw", "th"];
 const V_ROOT_URL: &str = "https://api.viki.io/v4/containers.json?page=";
 const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_recent&licensed=true&app=100000a&origin_country=";
-const VIKI_FILE: &str = "./viki.csv";
-const WMDA_FILE: &str = "./viki_wmda.csv";
+const VIKI_FILE: &str = "./result.csv";
+const WMDA_FILE: &str = "./result2.csv";
 const HEADER: &[&str] = &[
     "title_en",
     "title_zh",
@@ -89,10 +87,11 @@ const HEADER: &[&str] = &[
     "douban_rate",
 ];
 const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
-const WMDB_CALL_INTERVAL: u64 = 31;
+const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
 
 pub fn create_csv_from_viki() -> MyResult<()> {
-    let mut csv_data = String::from(HEADER.join(","));
+    let mut csv_data =
+        String::from("title_en,title_zh,url,fi,rate,rate_count,clips_count,created_at,country\n");
     csv_data.push_str("\n");
 
     for country in COUNTRIES.iter() {
