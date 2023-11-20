@@ -83,8 +83,6 @@ const HEADER: &[&str] = &[
     "clips_count",
     "created_at",
     "country",
-    "douban_id",
-    "douban_rate",
 ];
 const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
 const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
