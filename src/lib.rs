@@ -150,7 +150,13 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
 fn call_wmdb(name: &str) -> MyResult<(String, String)> {
     let request_url = format!("{}{}", W_ROOT_URL, name);
     let resp = http_get(request_url)?;
-    let items: Vec<WmdaItem> = serde_json::from_str(&resp)?;
+    let items: Vec<WmdaItem> = match serde_json::from_str(&resp) {
+        Ok(n) => n,
+        Err(e) => {
+            eprintln!("Wmda response: '{}'", resp);
+            return Err(Box::new(e));
+        }
+    };
 
     for item in items {
         if item.data[0].name == name {
