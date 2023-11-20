@@ -138,8 +138,8 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
             }
             _ => {
                 println!("no ch_name");
-                record.push_field("0");
-                record.push_field("0");
+                record.push_field("N/A");
+                record.push_field("N/A");
                 writer.write_record(record.iter())?;
                 writer.flush()?;
             }
