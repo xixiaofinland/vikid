@@ -17,7 +17,7 @@ fn main() {
 
 pub fn run(arg: Arg) -> MyResult<()> {
     println!("VIKI data pulling..");
-    // vikid::create_csv_from_viki()?;
+    vikid::create_csv_from_viki()?;
 
     if arg.pull_extra == true {
         println!("WMDA data pulling...");
