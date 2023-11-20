@@ -90,8 +90,8 @@ const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
 const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
 
 pub fn create_csv_from_viki() -> MyResult<()> {
-    let mut csv_data =
-        String::from("title_en,title_zh,url,fi,rate,rate_count,clips_count,created_at,country\n");
+    let mut csv_data = String::from(HEADER.to_vec().join(","));
+    csv_data.push_str("\n");
 
     for country in COUNTRIES.iter() {
         let mut page = 0;
