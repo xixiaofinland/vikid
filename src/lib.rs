@@ -92,7 +92,6 @@ const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
 pub fn create_csv_from_viki() -> MyResult<()> {
     let mut csv_data =
         String::from("title_en,title_zh,url,fi,rate,rate_count,clips_count,created_at,country\n");
-    csv_data.push_str("\n");
 
     for country in COUNTRIES.iter() {
         let mut page = 0;
@@ -139,6 +138,8 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
             }
             _ => {
                 println!("no ch_name");
+                record.push_field("0");
+                record.push_field("0");
                 writer.write_record(record.iter())?;
                 writer.flush()?;
             }
