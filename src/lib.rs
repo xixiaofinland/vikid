@@ -1,8 +1,9 @@
-use csv::{ReaderBuilder, WriterBuilder};
+use csv::{ReaderBuilder, Writer};
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
 use std::error::Error;
-use std::fs;
+use std::fs::{self, File, OpenOptions};
+use std::io::{prelude::*, BufReader};
 use std::{thread, time};
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
@@ -73,21 +74,9 @@ const V_ROOT_URL: &str = "https://api.viki.io/v4/containers.json?page=";
 const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_recent&licensed=true&app=100000a&origin_country=";
 const VIKI_FILE: &str = "./result.csv";
 const WMDA_FILE: &str = "./result2.csv";
-const HEADER: &[&str] = &[
-    "title_en",
-    "title_zh",
-    "url",
-    "fi",
-    "rate",
-    "rate_count",
-    "clips_count",
-    "created_at",
-    "country",
-    "douban_id",
-    "douban_rating",
-];
 const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
 const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
+const ZH_NAME_INDEX: usize = 1;
 
 pub fn create_csv_from_viki() -> MyResult<()> {
     // let mut csv_data = String::from(HEADER.to_vec().join(","));
@@ -117,14 +106,35 @@ pub fn create_csv_from_viki() -> MyResult<()> {
 }
 
 pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
-    let mut writer = WriterBuilder::new().from_path(WMDA_FILE)?;
-    writer.write_record(HEADER)?;
+    let num_processed_lines = match File::open(WMDA_FILE) {
+        Ok(f) => BufReader::new(f).lines().count(),
+        _ => 0,
+    };
 
-    let reader = ReaderBuilder::new().from_path(VIKI_FILE)?;
-    for record in reader.into_records() {
-        let mut record = record?;
+    println!("Already proceeded: {}", num_processed_lines);
 
-        match record.get(1) {
+    let reader = ReaderBuilder::new()
+        .has_headers(false)
+        .from_path(VIKI_FILE)?;
+    let lines_to_process: Vec<_> = reader
+        .into_records()
+        .enumerate()
+        .filter(|&(i, _)| i >= num_processed_lines)
+        .map(|(_, v)| v)
+        .collect();
+
+    println!("size: {}", &lines_to_process.len());
+
+    let file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(WMDA_FILE)?;
+    let mut writer = Writer::from_writer(file);
+
+    for line in lines_to_process {
+        let mut record = line?;
+
+        match record.get(ZH_NAME_INDEX) {
             Some(name) if !name.is_empty() => {
                 println!("call wmdb: {}", name);
                 let response = call_wmdb(&name)?;
