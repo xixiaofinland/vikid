@@ -111,7 +111,7 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
         _ => 0,
     };
 
-    println!("Already proceeded: {}", num_processed_lines);
+    println!("Already proceeded: {}\nContinue...\n", num_processed_lines);
 
     let reader = ReaderBuilder::new()
         .has_headers(false)
@@ -122,8 +122,6 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
         .filter(|&(i, _)| i >= num_processed_lines)
         .map(|(_, v)| v)
         .collect();
-
-    println!("size: {}", &lines_to_process.len());
 
     let file = OpenOptions::new()
         .create(true)
