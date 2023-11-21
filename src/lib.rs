@@ -83,13 +83,15 @@ const HEADER: &[&str] = &[
     "clips_count",
     "created_at",
     "country",
+    "douban_id",
+    "douban_rating",
 ];
 const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
 const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
 
 pub fn create_csv_from_viki() -> MyResult<()> {
-    let mut csv_data = String::from(HEADER.to_vec().join(","));
-    csv_data.push_str("\n");
+    // let mut csv_data = String::from(HEADER.to_vec().join(","));
+    let mut csv_data = String::new();
 
     for country in COUNTRIES.iter() {
         let mut page = 0;
@@ -115,10 +117,10 @@ pub fn create_csv_from_viki() -> MyResult<()> {
 }
 
 pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
-    let reader = ReaderBuilder::new().from_path(VIKI_FILE)?;
     let mut writer = WriterBuilder::new().from_path(WMDA_FILE)?;
     writer.write_record(HEADER)?;
 
+    let reader = ReaderBuilder::new().from_path(VIKI_FILE)?;
     for record in reader.into_records() {
         let mut record = record?;
 
@@ -129,6 +131,7 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
                 println!("response: {:?}", response);
                 record.push_field(&response.0);
                 record.push_field(&response.1);
+                println!("---> {}", record.iter().count());
                 writer.write_record(record.iter())?;
                 writer.flush()?;
                 println!("Sleep...{} secs", WMDB_CALL_INTERVAL);
@@ -138,6 +141,7 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
                 println!("no ch_name");
                 record.push_field("N/A");
                 record.push_field("N/A");
+                println!("---> {}", record.iter().count());
                 writer.write_record(record.iter())?;
                 writer.flush()?;
             }
