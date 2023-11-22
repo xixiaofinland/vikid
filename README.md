@@ -1,9 +1,27 @@
 # Vikid Cli
 
-A commandline tool to retrieve TV Series that have Finnish subtitles from viki.com.
-The result is saved in the result.csv under the same path.
+I want to know what TV in viki.com have finnish subtitles, but I trust more the rating from douban.com.
 
-The CSV includes columns: "title_en,title_zh,url,Fi_subtitle_rate,review_rate,rateCount,clipsCount,created_at,country"
+Therefore, this is a Cli to retrieve Finnish language subtitled TV Series info from viki (and wmda).
 
-There is also a node verison of this tool
+# Install
+
+`cargo install vikid`
+
+# How to use it
+
+Run `vikid` without any parameter will fetch info from viki and wmda in
+sequence, then save the result into the corresponding csv files.
+
+```
+Usage: vikid [OPTIONS]
+
+Options:
+  -d, --douban   Retrieve only douban info(id and rating) from wmda
+  -v, --viki     Retrieve only basic info from viki
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
+There is also a node verison of this tool. It only fetch from viki without wmda(douban). 
 [here](https://github.com/xixiaofinland/viki-videos-with-finnish-subtitle)

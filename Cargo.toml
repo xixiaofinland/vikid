@@ -1,9 +1,9 @@
 [package]
 name = "vikid"
 authors = ["Xi Xiao <tdxiaoxi2@gmail.com>"]
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
-description = "A commandline tool to retrieve TV Series that have Finnish subtitles from viki.com."
+description = "A Cli to retrieve Finnish language subtitled TV Series info from viki.com (and wmda)."
 license = "MIT OR Apache-2.0"
 
 [dependencies]

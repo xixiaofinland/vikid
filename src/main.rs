@@ -5,10 +5,20 @@ type MyResult<T> = Result<T, Box<dyn std::error::Error>>;
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 pub struct Arg {
-    #[arg(short('d'), long("douban"), conflicts_with("viki"))]
+    #[arg(
+        short('d'),
+        long("douban"),
+        conflicts_with("viki_only"),
+        help("Retrieve only douban info(id and rating) from wmda")
+    )]
     douban_only: bool,
 
-    #[arg(short('v'), long("viki"), conflicts_with("douban"))]
+    #[arg(
+        short('v'),
+        long("viki"),
+        conflicts_with("douban_only"),
+        help("Retrieve only basic info from viki")
+    )]
     viki_only: bool,
 }
 

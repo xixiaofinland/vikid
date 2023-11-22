@@ -1,5 +1,5 @@
 use csv::{ReaderBuilder, Writer};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::Number;
 use std::error::Error;
 use std::fs::{self, File, OpenOptions};
@@ -9,13 +9,13 @@ use std::{thread, time};
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
 // ===========================================================
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct VikiResponse {
     more: bool,
     response: Vec<Item>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Item {
     titles: Title,
     subtitle_completions: Subtitle,
@@ -25,30 +25,30 @@ struct Item {
     created_at: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Title {
     en: String,
     #[serde(default)]
     zh: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Subtitle {
     fi: Option<Number>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Url {
     web: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Review {
     average_rating: Number,
     count: Number,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct Clip {
     count: Number,
 }
@@ -75,7 +75,7 @@ const PARAMETERS: &str = "&per_page=50&with_paging=false&order=desc&sort=views_r
 const VIKI_FILE: &str = "./result.csv";
 const WMDA_FILE: &str = "./result2.csv";
 const W_ROOT_URL: &str = "https://api.wmdb.tv/api/v1/movie/search?q=";
-const WMDB_CALL_INTERVAL: u64 = 31; // server side 30sec break restriction;
+const WMDB_CALL_INTERVAL: u64 = 31; // server side has 30sec interval calling restriction;
 const ZH_NAME_INDEX: usize = 1;
 
 pub fn create_csv_from_viki() -> MyResult<()> {
@@ -92,6 +92,7 @@ pub fn create_csv_from_viki() -> MyResult<()> {
             let data: VikiResponse = serde_json::from_str(&resp)?;
 
             csv_data.push_str(&fetch_data(&data.response, country));
+
             match data.more {
                 true => page += 1,
                 false => {
@@ -137,6 +138,7 @@ pub fn create_csv_from_wmda() -> Result<(), Box<dyn Error>> {
                 println!("call wmdb: {}", name);
                 let response = call_wmdb(&name)?;
                 println!("response: {:?}", response);
+
                 record.push_field(&response.0);
                 record.push_field(&response.1);
                 println!("---> {}", record.iter().count());
@@ -213,37 +215,37 @@ fn http_get(url: String) -> MyResult<String> {
     Ok(reqwest::blocking::get(url)?.text()?)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    // use httpmock::prelude::*;
-    type TestResult = Result<(), Box<dyn std::error::Error>>;
-
-    const viki_res: &str = "tests/viki_response.txt";
-
-    #[test]
-    fn can_serielize() -> TestResult {
-        let json_string = fs::read_to_string(viki_res)?;
-        let result: VikiResponse = serde_json::from_str(&json_string)?;
-
-        assert_eq!(result.more, true);
-        assert_eq!(result.response.len(), 1);
-
-        Ok(())
-    }
-
-    // #[test]
-    // fn can_get_http() -> TestResult {
-    //     let server = MockServer::start();
-    //     let viki_mock = server.mock(|when, then| {
-    //         when.method(GET);
-    //         then.status(200).body("hello world!");
-    //     });
-    //
-    //     let response = get_http(server.url("/"))?;
-    //
-    //     viki_mock.assert();
-    //     assert_eq!(response, "hello world!");
-    //     Ok(())
-    // }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     // use httpmock::prelude::*;
+//     type TestResult = Result<(), Box<dyn std::error::Error>>;
+//
+//     const viki_res: &str = "tests/viki_response.txt";
+//
+//     #[test]
+//     fn can_serielize() -> TestResult {
+//         let json_string = fs::read_to_string(viki_res)?;
+//         let result: VikiResponse = serde_json::from_str(&json_string)?;
+//
+//         assert_eq!(result.more, true);
+//         assert_eq!(result.response.len(), 1);
+//
+//         Ok(())
+//     }
+//
+//     #[test]
+//     fn can_get_http() -> TestResult {
+//         let server = MockServer::start();
+//         let viki_mock = server.mock(|when, then| {
+//             when.method(GET);
+//             then.status(200).body("hello world!");
+//         });
+//
+//         let response = get_http(server.url("/"))?;
+//
+//         viki_mock.assert();
+//         assert_eq!(response, "hello world!");
+//         Ok(())
+//     }
+// }
