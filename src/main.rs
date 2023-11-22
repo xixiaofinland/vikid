@@ -8,7 +8,7 @@ pub struct Arg {
     #[arg(
         short('v'),
         long("viki"),
-        conflicts_with("douban_only"),
+        conflicts_with("wmda_only"),
         help("Retrieve only basic info from viki")
     )]
     viki_only: bool,
