@@ -23,5 +23,11 @@ Options:
   -V, --version  Print version
 ```
 
+Here is collected info on 11.2023,
+- [csv from viki](./result.csv)
+- [csv from wmda](./result2.csv)
+
+# A node version
+
 There is also a node verison of this tool. It only fetch from viki without wmda(douban). 
 [here](https://github.com/xixiaofinland/viki-videos-with-finnish-subtitle)
