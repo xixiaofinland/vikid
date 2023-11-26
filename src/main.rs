@@ -1,7 +1,5 @@
 use clap::Parser;
 
-type MyResult<T> = Result<T, Box<dyn std::error::Error>>;
-
 #[derive(Debug, Parser)]
 #[command(author, version, about)]
 pub struct Arg {
@@ -14,10 +12,12 @@ pub struct Arg {
     viki_only: bool,
 
     #[arg(
-        short('d'),
-        long("douban"),
+        short('w'),
+        long("wmda"),
         conflicts_with("viki_only"),
-        help("Retrieve only extra info from wmda (based on existing viki result)")
+        help(
+            "Assume viki csv was created, retrieve only data from wmda (i.e. douban id, douban rating)"
+        )
     )]
     wmda_only: bool,
 }
@@ -29,18 +29,18 @@ fn main() {
     }
 }
 
-pub fn run(arg: Arg) -> MyResult<()> {
+pub fn run(arg: Arg) -> vikid::MyResult<()> {
     if arg.viki_only == true {
         println!("VIKI data pulling..");
-        vikid::create_csv_from_viki()?;
+        vikid::viki::create_csv()?;
     } else if arg.wmda_only == true {
         println!("WMDA data pulling...");
-        vikid::create_csv_from_wmda()?;
+        vikid::wmda::create_csv()?;
     } else {
         println!("VIKI data pulling..");
-        vikid::create_csv_from_viki()?;
+        vikid::viki::create_csv()?;
         println!("WMDA data pulling...");
-        vikid::create_csv_from_wmda()?;
+        vikid::wmda::create_csv()?;
     }
 
     Ok(())

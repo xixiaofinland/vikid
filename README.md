@@ -1,14 +1,14 @@
 # Vikid Cli
 
-I want to know what TV in viki.com have finnish subtitles, but I trust more the rating from douban.com.
+I want to know what TVs in viki.com have finnish subtitles, as well as their `douban id` and `douban rating`.
 
-Therefore, this is a Cli to retrieve Finnish language subtitled TV Series info from viki and wmda (which has doban info).
+This is a Cli to retrieve these info from api endpoints of viki and wmda (which has doban info).
 
 # Fetched data
 
 In case you only need the data, here is collected info (updated: 11.2023):
-- [csv from viki and wmda(with douban info)](./result2.csv)
-- [csv from viki only](./result.csv)
+- [csv from viki and wmda(with douban info)](./viki.csv)
+- [csv from viki only](./viki_wmda.csv)
 
 In case you want to install vikid and fetch data by yourself, read further:
 
@@ -18,15 +18,23 @@ In case you want to install vikid and fetch data by yourself, read further:
 
 # How to use it
 
-Run `vikid` without any parameter will fetch info from viki and wmda in
-sequence, then save the result into the corresponding csv files.
+Run `vikid` without any parameter will fetch info both from viki and wmda in
+two steps.
+
+1. Fetch data from viki api. this step is fast as viki api has no restriction
+2. After step 1, fetch douban data from wmda api. This step is slow as wmda has
+   30 second interval restriction. So we can fetch up to one TV series data
+   every 30 seconds.
+
+You can also execute against either step with corresponding parameters defined
+below:
 
 ```
 Usage: vikid [OPTIONS]
 
 Options:
-  -d, --douban   Retrieve also douban info(id and rating) from wmda
   -v, --viki     Retrieve only basic info from viki
+  -w, --wmda     Assume viki csv was created, retrieve only data from wmda (i.e. douban id, douban rating)
   -h, --help     Print help
   -V, --version  Print version
 ```
