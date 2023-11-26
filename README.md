@@ -7,8 +7,8 @@ This is a Cli to retrieve these info from api endpoints of viki and wmda (which 
 # Fetched data
 
 In case you only need the data, here is collected info (updated: 11.2023):
-- [csv from viki and wmda(with douban info)](./viki.csv)
-- [csv from viki only](./viki_wmda.csv)
+- [csv from viki and wmda(with douban info)](./viki_wmda.csv)
+- [csv from viki only](./viki.csv)
 
 In case you want to install vikid and fetch data by yourself, read further:
 
