@@ -2,13 +2,13 @@
 
 I want to know what TV in viki.com have finnish subtitles, but I trust more the rating from douban.com.
 
-Therefore, this is a Cli to retrieve Finnish language subtitled TV Series info from viki (and wmda).
+Therefore, this is a Cli to retrieve Finnish language subtitled TV Series info from viki and wmda (which has doban info).
 
 # Fetched data
 
 In case you only need the data, here is collected info (updated: 11.2023):
-- [csv from viki](./result.csv)
-- [csv from wmda](./result2.csv)
+- [csv from viki and wmda(with douban info)](./result2.csv)
+- [csv from viki only](./result.csv)
 
 In case you want to install vikid and fetch data by yourself, read further:
 
